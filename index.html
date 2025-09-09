@@ -111,6 +111,29 @@
         .bounce-in {
             animation: bounce-in 0.5s cubic-bezier(0.4, 0, 0.6, 1);
         }
+
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .confetti span {
+            position: absolute;
+            display: block;
+            font-size: 2rem;
+            animation: confetti-fall linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -186,7 +209,7 @@
 
         <!-- Project Workspace Screen (hidden by default) -->
         <div id="project-workspace-screen" class="hidden w-full">
-            <button id="back-to-dashboard-btn" class="btn mb-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg shadow-lg">
+            <button id="back-to-dashboard-btn" class="btn mb-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg shadow-lg hidden">
                 &larr; Back to Dashboard
             </button>
             <div id="project-content" class="p-6 card">
@@ -194,6 +217,7 @@
             </div>
         </div>
     </div>
+    <div id="confetti-container" class="confetti hidden"></div>
 
     <script>
         // --- Core UI Logic and State Management (MOCK) ---
@@ -205,6 +229,7 @@
         const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
         const projectListContainer = document.getElementById('project-list');
         const projectContentContainer = document.getElementById('project-content');
+        const confettiContainer = document.getElementById('confetti-container');
         
         let userState = {
             xp: 0,
@@ -267,6 +292,9 @@
                                     <button id="complete-mission-btn" class="btn mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
                                         Claim XP
                                     </button>
+                                    <p id="back-to-dashboard-text" class="text-md font-semibold text-gray-700 mt-4 hidden">
+                                        Click the "Back to Dashboard" button to continue your adventure!
+                                    </p>
                                 </div>
                                 <div id="new-rule-lesson" class="p-4 mt-4 bg-red-100 rounded-lg text-red-800 hidden">
                                     <h4 class="text-lg font-bold mb-2">Let's teach Bit a new rule!</h4>
@@ -320,7 +348,7 @@
                                     </div>
                                 </div>
                                 <div class="flex justify-center gap-4 mb-4 flex-wrap">
-                                    <img src="https://images.unsplash.com/photo-1543468571-c06b8b0e5c94?q=80&w=2670&auto=format&fit=crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/ffe4e6/f72585?text=cat'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="animal">
+                                    <img src="https://images.unsplash.com/photo-1543468571-c06b8b0e5c94?q=80&w=2670&auto=format&fit-crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/ffe4e6/f72585?text=cat'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="animal">
                                     <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?q=80&w=2524&auto=format&fit-crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/e7c6ff/7209b7?text=dog'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="animal">
                                     <img src="https://images.unsplash.com/photo-1507146522045-b46187766b1a?q=80&w=2787&auto=format&fit-crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/d9f99d/4d7c0f?text=tree'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="plant">
                                     <img src="https://images.unsplash.com/photo-1517423568366-8b29c54e0821?q=80&w=2670&auto=format&fit-crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/e7c6ff/7209b7?text=dog'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="animal">
@@ -337,6 +365,14 @@
                                 </div>
                                 <div id="feedback-message-image" class="mt-4 text-center text-green-600 font-bold hidden">
                                     Model trained successfully! +50 XP!
+                                </div>
+                                <div id="project2-completion" class="mt-4 text-center hidden">
+                                     <button id="complete-mission-btn-2" class="btn mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
+                                        Claim XP
+                                    </button>
+                                    <p id="back-to-dashboard-text-2" class="text-md font-semibold text-gray-700 mt-4 hidden">
+                                        Click the "Back to Dashboard" button to continue your adventure!
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -391,6 +427,14 @@
                                 <div id="feedback-message-rps" class="mt-4 text-center text-green-600 font-bold hidden">
                                     Great job! You've built a powerful, learning AI opponent!
                                 </div>
+                                <div id="project3-completion" class="mt-4 text-center hidden">
+                                     <button id="complete-mission-btn-3" class="btn mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
+                                        Claim XP
+                                    </button>
+                                    <p id="back-to-dashboard-text-3" class="text-md font-semibold text-gray-700 mt-4 hidden">
+                                        Click the "Back to Dashboard" button to continue your adventure!
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -400,6 +444,24 @@
 
         // Check if the user is "logged in" from a previous session (using mock localStorage)
         const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+        function showConfetti() {
+            confettiContainer.classList.remove('hidden');
+            const emojis = ['🍁'];
+            const numberOfConfetti = 50;
+            for (let i = 0; i < numberOfConfetti; i++) {
+                const confetti = document.createElement('span');
+                confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.animationDuration = `${Math.random() * 2 + 3}s`;
+                confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                confettiContainer.appendChild(confetti);
+            }
+            setTimeout(() => {
+                confettiContainer.classList.add('hidden');
+                confettiContainer.innerHTML = '';
+            }, 5000);
+        }
 
         // Update the UI with the mock data
         function updateUI() {
@@ -412,10 +474,13 @@
             document.getElementById('user-xp').textContent = userState.xp;
             document.getElementById('user-level').textContent = userState.level;
             document.getElementById('badge-count').textContent = userState.badges.length;
+            
+            const totalProjects = Object.keys(projects).length;
+            const completedProjects = Object.values(userState.progress).filter(status => status === 'completed').length;
+            const progressPercentage = (completedProjects / totalProjects) * 100;
 
-            const progressPercentage = Math.min(100, (userState.xp / 100) * 100);
             document.getElementById('progress-fill').style.width = `${progressPercentage}%`;
-            document.getElementById('xp-text').textContent = `${userState.xp}/100 XP to next level`;
+            document.getElementById('xp-text').textContent = `${userState.xp} XP`;
 
             renderProjectList();
         }
@@ -487,6 +552,7 @@
             // Show the correct screen
             dashboardScreen.classList.add('hidden');
             projectScreen.classList.remove('hidden');
+            backToDashboardBtn.classList.add('hidden');
 
             // Add event listeners for the specific project
             if (projectId === 'chat-bot') {
@@ -496,6 +562,7 @@
                 const completionSection = document.getElementById('project1-completion');
                 const bitSaysPanel = document.getElementById('bit-says-panel');
                 const newRuleLessonPanel = document.getElementById('new-rule-lesson');
+                const backToDashboardText = document.getElementById('back-to-dashboard-text');
 
                 // We have three pre-defined rules, and one to be taught
                 const rules = {
@@ -566,7 +633,11 @@
                             userState.badges.push(`${projectId}-badge`);
                             localStorage.setItem('userState', JSON.stringify(userState));
                             updateUI();
-                            completionSection.classList.add('hidden'); // Hide after claim
+                            showConfetti();
+                            setTimeout(() => {
+                                backToDashboardBtn.classList.remove('hidden');
+                                backToDashboardText.classList.remove('hidden');
+                            }, 5500); // Show back to dashboard message after confetti is done
                         });
                     }
                 }
@@ -576,6 +647,9 @@
                 const trainModelBtn = document.getElementById('train-model-btn');
                 const testModelBtn = document.getElementById('test-model-btn');
                 const feedbackMsg = document.getElementById('feedback-message-image');
+                const completionSection = document.getElementById('project2-completion');
+                const backToDashboardText = document.getElementById('back-to-dashboard-text-2');
+                const claimBtn = document.getElementById('complete-mission-btn-2');
                 let placedImages = new Set();
                 
                 images.forEach(img => {
@@ -638,15 +712,23 @@
                 });
 
                 testModelBtn.addEventListener('click', () => {
-                    feedbackMsg.textContent = 'You did it! You built a brain that can see! +50 XP!';
+                    feedbackMsg.textContent = 'You did it! You built a brain that can see!';
                     feedbackMsg.classList.remove('hidden', 'text-red-600');
                     feedbackMsg.classList.add('text-green-600');
-                    userState.xp += 50;
-                    userState.progress[projectId] = 'completed';
-                    userState.badges.push(`${projectId}-badge`);
-                    localStorage.setItem('userState', JSON.stringify(userState));
-                    updateUI();
+                    completionSection.classList.remove('hidden');
                     testModelBtn.disabled = true;
+                    claimBtn.addEventListener('click', () => {
+                        userState.xp += 50;
+                        userState.progress[projectId] = 'completed';
+                        userState.badges.push(`${projectId}-badge`);
+                        localStorage.setItem('userState', JSON.stringify(userState));
+                        updateUI();
+                        showConfetti();
+                        setTimeout(() => {
+                           backToDashboardBtn.classList.remove('hidden');
+                           backToDashboardText.classList.remove('hidden');
+                        }, 5500); // Show back to dashboard message after confetti is done
+                    });
                 });
             } else if (projectId === 'rps-game') {
                 const playerMoveEl = document.getElementById('player-move');
@@ -655,6 +737,9 @@
                 const buttons = document.querySelectorAll('#rps-game .btn');
                 const moves = ['rock', 'paper', 'scissors'];
                 const feedbackMsg = document.getElementById('feedback-message-rps');
+                const completionSection = document.getElementById('project3-completion');
+                const backToDashboardText = document.getElementById('back-to-dashboard-text-3');
+                const claimBtn = document.getElementById('complete-mission-btn-3');
                 let gamePlayed = false;
 
                 buttons.forEach(button => {
@@ -695,11 +780,19 @@
                         if (!gamePlayed && userState.progress[projectId] === 'not-started') {
                             gamePlayed = true;
                             feedbackMsg.classList.remove('hidden');
-                            userState.xp += 50;
-                            userState.progress[projectId] = 'completed';
-                            userState.badges.push(`${projectId}-badge`);
-                            localStorage.setItem('userState', JSON.stringify(userState));
-                            updateUI();
+                            completionSection.classList.remove('hidden');
+                            claimBtn.addEventListener('click', () => {
+                                userState.xp += 50;
+                                userState.progress[projectId] = 'completed';
+                                userState.badges.push(`${projectId}-badge`);
+                                localStorage.setItem('userState', JSON.stringify(userState));
+                                updateUI();
+                                showConfetti();
+                                setTimeout(() => {
+                                    backToDashboardBtn.classList.remove('hidden');
+                                    backToDashboardText.classList.remove('hidden');
+                                }, 5500); // Show back to dashboard message after confetti is done
+                            });
                         }
                     });
                 });
