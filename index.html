@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Learning Adventure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light background */
+            color: #2d3748; /* Dark text */
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Custom scrollbar for a polished look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+            overflow-y: auto; /* Allow the container to scroll */
+        }
+
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-height: 80vh; /* Set a max height */
+            overflow-y: auto; /* Allow card content to scroll */
+        }
+
+        .progress-bar {
+            height: 12px;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #9f7aea);
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Add a subtle animation to buttons and interactive elements */
+        .btn, button, a {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        .btn:hover, button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px 0 rgba(100, 100, 100, 0.25);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        .drag-over {
+            border: 3px dashed #9f7aea !important;
+            box-shadow: 0 0 10px rgba(159, 122, 234, 0.5);
+        }
+
+        /* Keyframes for the bounce animation on moves */
+        @keyframes bounce-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.25); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        .bounce-in {
+            animation: bounce-in 0.5s cubic-bezier(0.4, 0, 0.6, 1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <!-- Main application container -->
+    <div class="container p-4 sm:p-6 lg:p-8">
+
+        <!-- Initial Welcome/Login Screen -->
+        <div id="welcome-screen" class="flex flex-col items-center text-center max-w-2xl px-4 py-8 card">
+            <h1 class="text-4xl sm:text-5xl font-bold mb-4">AI Learning Adventure</h1>
+            <p class="text-lg text-gray-600 mb-8">
+                Embark on a grand adventure to help a friendly AI companion rebuild a lost world! Learn about
+                Artificial Intelligence by completing fun projects and earning badges.
+            </p>
+            <div class="mb-8">
+                <img src="https://placehold.co/150x150/667eea/ffffff?text=Bit" alt="Bit the AI Companion" class="rounded-full pulse-animation">
+            </div>
+            <button id="start-adventure-btn" class="btn px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full shadow-lg">
+                Start Adventure
+            </button>
+        </div>
+
+        <!-- Main Dashboard Screen (hidden by default) -->
+        <div id="dashboard-screen" class="hidden w-full">
+            <header class="flex flex-col md:flex-row justify-between items-center mb-8 p-4 md:p-6 card">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <img id="player-avatar" src="https://placehold.co/80x80/3182CE/ffffff?text=You" alt="Your Avatar" class="rounded-full mr-4">
+                    <div>
+                        <h2 class="text-2xl font-bold">Junior AI Explorer</h2>
+                        <div class="text-sm text-gray-600">Level <span id="user-level">1</span></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-center md:text-left w-full md:w-auto">
+                    <div>
+                        <div class="text-sm text-gray-600">XP</div>
+                        <div id="user-xp" class="text-lg font-bold">0</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-600">Badges</div>
+                        <div id="badge-count" class="text-lg font-bold">0</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-600">Status</div>
+                        <div id="bit-status" class="text-lg font-bold">Fragmented</div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Current Mission/Project Card -->
+                <div class="lg:col-span-2 p-6 card">
+                    <h3 class="text-xl font-bold mb-4">Missions: Tiers & Projects</h3>
+                    <div id="project-list" class="space-y-4">
+                        <!-- Project modules will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Gamification Elements Card -->
+                <div class="p-6 card flex flex-col items-center text-center">
+                    <h3 class="text-xl font-bold mb-4">Achievements</h3>
+                    <div id="achievements-display" class="grid grid-cols-3 gap-4">
+                        <!-- Badges will be displayed here -->
+                    </div>
+                    <div class="mt-8 w-full">
+                        <h4 class="text-lg font-bold mb-2">My Progress</h4>
+                        <div class="progress-bar mb-2">
+                            <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                        <div id="xp-text" class="text-sm text-gray-600">0/100 XP to next level</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Project Workspace Screen (hidden by default) -->
+        <div id="project-workspace-screen" class="hidden w-full">
+            <button id="back-to-dashboard-btn" class="btn mb-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg shadow-lg">
+                &larr; Back to Dashboard
+            </button>
+            <div id="project-content" class="p-6 card">
+                <!-- Project-specific content will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Core UI Logic and State Management (MOCK) ---
+        // In a real app, this would be replaced by Firebase and a backend server.
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const projectScreen = document.getElementById('project-workspace-screen');
+        const startBtn = document.getElementById('start-adventure-btn');
+        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+        const projectListContainer = document.getElementById('project-list');
+        const projectContentContainer = document.getElementById('project-content');
+        
+        let userState = {
+            xp: 0,
+            level: 1,
+            badges: [],
+            progress: {
+                'chat-bot': 'not-started',
+                'image-classifier': 'not-started',
+                'rps-game': 'not-started',
+            },
+            chatQuestionsAsked: 0
+        };
+
+        const projects = {
+            'chat-bot': {
+                title: 'Project 1: The Smart Chatbot',
+                tier: 'Tier 1 - The Fundamentals',
+                status: 'not-started',
+                buttonText: 'Start Project',
+                content: `
+                    <h2 class="text-3xl font-bold mb-4 text-center">Project 1: The Smart Chatbot</h2>
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <div class="md:w-1/3">
+                            <div class="p-4 bg-blue-100 rounded-lg text-blue-800">
+                                <h3 class="text-lg font-bold mb-2">Lesson: Giving Rules</h3>
+                                <p class="text-sm">
+                                    Before we start, let's give our chatbot some simple rules. You're the teacher!
+                                </p>
+                                <p class="mt-2 text-sm font-semibold">
+                                    Try asking these questions:
+                                </p>
+                                <ul class="list-disc list-inside mt-1 text-sm">
+                                    <li>"What is your name?"</li>
+                                    <li>"What is your favorite color?"</li>
+                                    <li>"How old are you?"</li>
+                                </ul>
+                            </div>
+                            <div id="bit-says-panel" class="p-4 mt-4 bg-yellow-100 rounded-lg text-yellow-800">
+                                <h3 class="text-lg font-bold mb-2">Bit Says:</h3>
+                                <p class="text-sm">
+                                    "I need to learn how to talk! Can you teach me some simple rules so I can answer questions?"
+                                </p>
+                            </div>
+                        </div>
+                        <div class="md:w-2/3">
+                            <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                                <h4 class="text-xl font-bold mb-4">Chatbot Interface</h4>
+                                <div id="chatbot-messages" class="bg-white rounded-lg p-4 mb-4 h-48 overflow-y-auto border border-gray-300">
+                                    <p class="text-gray-600">
+                                        Hello, I am a simple chatbot. Ask me a question!
+                                    </p>
+                                </div>
+                                <input type="text" id="chat-input" placeholder="Type your question here..." class="w-full p-2 rounded-lg bg-white border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button id="send-btn" class="btn mt-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg w-full">
+                                    Send
+                                </button>
+                                <div id="project1-completion" class="mt-4 text-center hidden">
+                                    <h4 class="text-lg font-bold text-green-600 mb-2">Mission Complete!</h4>
+                                    <p class="text-gray-700">You've learned about **Rule-Based AI**, where a program follows specific instructions to seem intelligent. In the next project, we'll teach an AI to learn from **data**!</p>
+                                    <button id="complete-mission-btn" class="btn mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
+                                        Claim XP
+                                    </button>
+                                </div>
+                                <div id="new-rule-lesson" class="p-4 mt-4 bg-red-100 rounded-lg text-red-800 hidden">
+                                    <h4 class="text-lg font-bold mb-2">Let's teach Bit a new rule!</h4>
+                                    <p class="text-sm">
+                                        Bit didn't know how to answer that because it's a new rule. To teach it, type "yes!"
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            'image-classifier': {
+                title: 'Project 2: The Custom Image Classifier',
+                tier: 'Tier 2 - Teaching a Computer to See',
+                status: 'not-started',
+                buttonText: 'Start Project',
+                content: `
+                    <h2 class="text-3xl font-bold mb-4 text-center">Project 2: The Custom Image Classifier</h2>
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <!-- Left side: Bit's story and instructions -->
+                        <div class="md:w-1/3">
+                            <div class="p-4 bg-purple-100 rounded-lg text-purple-800">
+                                <h3 class="text-lg font-bold mb-2">Lesson: Data and Training</h3>
+                                <p class="text-sm">
+                                    AI models learn from **data**. Think of it as teaching a new puppy. The more you show it, the better it learns!
+                                </p>
+                                <p class="mt-2 text-sm font-semibold">
+                                    We'll train our model to see the difference between animals and plants.
+                                </p>
+                            </div>
+                            <div class="p-4 mt-4 bg-yellow-100 rounded-lg text-yellow-800">
+                                <h3 class="text-lg font-bold mb-2">Bit Says:</h3>
+                                <p class="text-sm">
+                                    "My eyes are still a bit blurry! I need to learn to see again. Can you teach me to recognize animals from plants?"
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Right side: Interactive Workspace -->
+                        <div class="md:w-2/3">
+                            <div id="interactive-tool" class="bg-purple-50 p-6 rounded-lg border border-purple-200">
+                                <h4 class="text-xl font-bold mb-4">Training Interface</h4>
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div id="animal-dropzone" class="bg-blue-100 border border-blue-300 p-4 rounded-lg text-center dropzone">
+                                        <h5 class="font-bold text-blue-800">Animals</h5>
+                                        <div class="h-24 bg-blue-200 rounded-lg my-2 flex items-center justify-center text-blue-800 text-sm">Drag images here</div>
+                                    </div>
+                                    <div id="plant-dropzone" class="bg-green-100 border border-green-300 p-4 rounded-lg text-center dropzone">
+                                        <h5 class="font-bold text-green-800">Plants</h5>
+                                        <div class="h-24 bg-green-200 rounded-lg my-2 flex items-center justify-center text-green-800 text-sm">Drag images here</div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-center gap-4 mb-4 flex-wrap">
+                                    <img src="https://images.unsplash.com/photo-1543468571-c06b8b0e5c94?q=80&w=2670&auto=format&fit=crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/ffe4e6/f72585?text=cat'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="animal">
+                                    <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?q=80&w=2524&auto=format&fit-crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/e7c6ff/7209b7?text=dog'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="animal">
+                                    <img src="https://images.unsplash.com/photo-1507146522045-b46187766b1a?q=80&w=2787&auto=format&fit-crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/d9f99d/4d7c0f?text=tree'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="plant">
+                                    <img src="https://images.unsplash.com/photo-1517423568366-8b29c54e0821?q=80&w=2670&auto=format&fit-crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/e7c6ff/7209b7?text=dog'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="animal">
+                                    <img src="https://images.unsplash.com/photo-1549429188-6623d385f818?q=80&w=2564&auto=format&fit-crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/d9f99d/4d7c0f?text=tree'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="plant">
+                                    <img src="https://images.unsplash.com/photo-1551690940-28e4e97678f2?q=80&w=2669&auto=format&fit-crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/bfdbfe/1d4ed8?text=flower'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="plant">
+                                </div>
+                                <div id="controls" class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                                    <button id="train-model-btn" class="btn px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-lg">
+                                        Train Model
+                                    </button>
+                                    <button id="test-model-btn" class="btn px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg shadow-lg hidden">
+                                        Test Model
+                                    </button>
+                                </div>
+                                <div id="feedback-message-image" class="mt-4 text-center text-green-600 font-bold hidden">
+                                    Model trained successfully! +50 XP!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            'rps-game': {
+                title: 'Project 3: AI-Powered Rock-Paper-Scissors',
+                tier: 'Tier 3 - Putting It All Together',
+                status: 'not-started',
+                buttonText: 'Start Project',
+                content: `
+                    <h2 class="text-3xl font-bold mb-4 text-center">Project 3: AI-Powered Rock-Paper-Scissors</h2>
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <div class="md:w-1/3">
+                            <div class="p-4 bg-red-100 rounded-lg text-red-800">
+                                <h3 class="text-lg font-bold mb-2">Lesson: Simple Decision-Making</h3>
+                                <p class="text-sm">
+                                    Even a simple AI needs to make decisions. In this game, your opponent's 'brain' uses a basic rule: it picks a move at random. The computer doesn't know what you'll pick, it's just making a simple choice!
+                                </p>
+                                <p class="mt-2 text-sm font-semibold">
+                                    Click one of the buttons below and watch the screen to see what the AI chooses. The result will appear at the top.
+                                </p>
+                            </div>
+                            <div class="p-4 mt-4 bg-yellow-100 rounded-lg text-yellow-800">
+                                <h3 class="text-lg font-bold mb-2">Bit Says:</h3>
+                                <p class="text-sm">
+                                    "I'm ready for a challenge! Let's play a game, but you'll have to teach me how to win!"
+                                </p>
+                            </div>
+                        </div>
+                        <div class="md:w-2/3">
+                            <div class="bg-red-50 p-6 rounded-lg border border-red-200 text-center">
+                                <h4 class="text-xl font-bold mb-4">Rock-Paper-Scissors Game</h4>
+                                <div class="flex flex-col sm:flex-row items-center justify-around text-center mb-4">
+                                    <div>
+                                        <p class="text-lg font-bold mb-2">You</p>
+                                        <div id="player-move" class="text-6xl text-gray-600 transition-transform duration-300 transform">❔</div>
+                                    </div>
+                                    <div class="text-5xl my-4 sm:my-0">VS</div>
+                                    <div>
+                                        <p class="text-lg font-bold mb-2">AI</p>
+                                        <div id="ai-move" class="text-6xl text-gray-600 transition-transform duration-300 transform">❔</div>
+                                    </div>
+                                </div>
+                                <div id="game-result" class="text-2xl font-bold mb-4 text-yellow-600"></div>
+                                <div class="flex justify-center gap-4">
+                                    <button id="rock-btn" data-move="rock" class="btn px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg">✊ Rock</button>
+                                    <button id="paper-btn" data-move="paper" class="btn px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg">✋ Paper</button>
+                                    <button id="scissors-btn" data-move="scissors" class="btn px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">✌️ Scissors</button>
+                                </div>
+                                <div id="feedback-message-rps" class="mt-4 text-center text-green-600 font-bold hidden">
+                                    Great job! You've built a powerful, learning AI opponent!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        // Check if the user is "logged in" from a previous session (using mock localStorage)
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+        // Update the UI with the mock data
+        function updateUI() {
+            // Check if userState exists in localStorage
+            const storedState = localStorage.getItem('userState');
+            if (storedState) {
+                userState = JSON.parse(storedState);
+            }
+
+            document.getElementById('user-xp').textContent = userState.xp;
+            document.getElementById('user-level').textContent = userState.level;
+            document.getElementById('badge-count').textContent = userState.badges.length;
+
+            const progressPercentage = Math.min(100, (userState.xp / 100) * 100);
+            document.getElementById('progress-fill').style.width = `${progressPercentage}%`;
+            document.getElementById('xp-text').textContent = `${userState.xp}/100 XP to next level`;
+
+            renderProjectList();
+        }
+
+        function renderProjectList() {
+            projectListContainer.innerHTML = '';
+            let currentTier = '';
+            for (const key in projects) {
+                const project = projects[key];
+                if (project.tier !== currentTier) {
+                    const tierHeader = document.createElement('h4');
+                    tierHeader.className = 'text-lg font-bold mt-4 mb-2 text-blue-500';
+                    tierHeader.textContent = project.tier;
+                    projectListContainer.appendChild(tierHeader);
+                    currentTier = project.tier;
+                }
+
+                const projectDiv = document.createElement('div');
+                projectDiv.className = 'flex flex-col sm:flex-row items-start sm:items-center p-4 card';
+                
+                let buttonColor = 'bg-blue-600 hover:bg-blue-700';
+                let statusText = '';
+                
+                switch (userState.progress[key]) {
+                    case 'completed':
+                        buttonColor = 'bg-green-600 hover:bg-green-700';
+                        statusText = '<span class="text-green-600 font-bold">Completed</span>';
+                        break;
+                    case 'in-progress':
+                        buttonColor = 'bg-yellow-600 hover:bg-yellow-700';
+                        statusText = '<span class="text-yellow-600 font-bold">In Progress</span>';
+                        break;
+                    case 'not-started':
+                    default:
+                        statusText = '<span class="text-gray-600">Not Started</span>';
+                        break;
+                }
+
+                projectDiv.innerHTML = `
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-lg">${project.title}</h4>
+                        <p class="text-sm text-gray-600">Status: ${statusText}</p>
+                    </div>
+                    <button class="btn px-6 py-2 ${buttonColor} text-white font-bold rounded-lg shadow-lg mt-4 sm:mt-0" data-project-id="${key}">
+                        ${userState.progress[key] === 'completed' ? 'Revisit Project' : project.buttonText}
+                    </button>
+                `;
+                projectListContainer.appendChild(projectDiv);
+            }
+            addProjectButtonListeners();
+        }
+
+        function addProjectButtonListeners() {
+            const projectButtons = document.querySelectorAll('#project-list button');
+            projectButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const projectId = e.target.dataset.projectId;
+                    renderProjectScreen(projectId);
+                });
+            });
+        }
+
+        function renderProjectScreen(projectId) {
+            const project = projects[projectId];
+            if (!project) return;
+            
+            projectContentContainer.innerHTML = project.content;
+            
+            // Show the correct screen
+            dashboardScreen.classList.add('hidden');
+            projectScreen.classList.remove('hidden');
+
+            // Add event listeners for the specific project
+            if (projectId === 'chat-bot') {
+                const sendBtn = document.getElementById('send-btn');
+                const chatInput = document.getElementById('chat-input');
+                const chatbox = document.getElementById('chatbot-messages');
+                const completionSection = document.getElementById('project1-completion');
+                const bitSaysPanel = document.getElementById('bit-says-panel');
+                const newRuleLessonPanel = document.getElementById('new-rule-lesson');
+
+                // We have three pre-defined rules, and one to be taught
+                const rules = {
+                    'what is your name': 'My name is Bit!',
+                    'what is your favorite color': 'My favorite color is blue!',
+                    'how old are you': 'I was just born, thanks to you!',
+                    'do you know me': null // This is the rule we need to teach
+                };
+
+                let correctAnswersGiven = 0;
+                let teachMode = false;
+                let teachQuestion = '';
+
+                sendBtn.addEventListener('click', () => sendMessage());
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+
+                function sendMessage() {
+                    const rawInput = chatInput.value.trim();
+                    if (!rawInput) return;
+
+                    const cleanedInput = rawInput.toLowerCase().replace(/[?.,!]/g, '');
+                    
+                    chatbox.innerHTML += `<p class="text-gray-800 mt-2"><b>You:</b> ${rawInput}</p>`;
+                    
+                    if (teachMode) {
+                        if (cleanedInput.includes('yes')) {
+                             rules[teachQuestion] = 'I know you very well! You are my friend!';
+                             teachMode = false;
+                             newRuleLessonPanel.classList.add('hidden');
+                             bitSaysPanel.classList.remove('hidden');
+                             bitSaysPanel.querySelector('p').textContent = `Awesome! You've taught me a new rule. Try asking me "Do you know me?" again!`;
+                             correctAnswersGiven++;
+                        } else {
+                            chatbox.innerHTML += `<p class="text-gray-600 mt-2"><b>Bit:</b> That's not how you teach me. Try typing "yes!"</p>`;
+                        }
+                    } else if (rules[cleanedInput] !== undefined) {
+                         if (rules[cleanedInput] === null) {
+                            // This is the specific rule that needs to be taught
+                            chatbox.innerHTML += `<p class="text-gray-600 mt-2"><b>Bit:</b> Sorry, I don't understand that yet.</p>`;
+                            newRuleLessonPanel.classList.remove('hidden');
+                            bitSaysPanel.classList.add('hidden');
+                            teachMode = true;
+                            teachQuestion = cleanedInput;
+                        } else {
+                            // Normal rule-based response
+                            chatbox.innerHTML += `<p class="text-gray-600 mt-2"><b>Bit:</b> ${rules[cleanedInput]}</p>`;
+                            correctAnswersGiven++;
+                        }
+                    } else {
+                        // The bot doesn't know the question at all.
+                        chatbox.innerHTML += `<p class="text-gray-600 mt-2"><b>Bit:</b> I don't have a rule for that. Please try one of the questions in the instructions panel to the side.</p>`;
+                    }
+                    
+                    chatbox.scrollTop = chatbox.scrollHeight;
+                    chatInput.value = '';
+
+                    // Check for mission progress
+                    if (correctAnswersGiven >= 3 && userState.progress[projectId] === 'not-started') {
+                        completionSection.classList.remove('hidden');
+                        document.getElementById('complete-mission-btn').addEventListener('click', () => {
+                             // Award XP and update state
+                            userState.xp += 50;
+                            userState.progress[projectId] = 'completed';
+                            userState.badges.push(`${projectId}-badge`);
+                            localStorage.setItem('userState', JSON.stringify(userState));
+                            updateUI();
+                            completionSection.classList.add('hidden'); // Hide after claim
+                        });
+                    }
+                }
+            } else if (projectId === 'image-classifier') {
+                const images = document.querySelectorAll('#interactive-tool img');
+                const dropzones = document.querySelectorAll('.dropzone');
+                const trainModelBtn = document.getElementById('train-model-btn');
+                const testModelBtn = document.getElementById('test-model-btn');
+                const feedbackMsg = document.getElementById('feedback-message-image');
+                let placedImages = new Set();
+                
+                images.forEach(img => {
+                    img.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', e.target.dataset.category);
+                        e.dataTransfer.setData('text/html', e.target.outerHTML);
+                        e.dataTransfer.effectAllowed = 'copy';
+                    });
+                });
+
+                dropzones.forEach(zone => {
+                    zone.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        e.currentTarget.classList.add('drag-over');
+                    });
+                    
+                    zone.addEventListener('dragleave', (e) => {
+                        e.currentTarget.classList.remove('drag-over');
+                    });
+
+                    zone.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        e.currentTarget.classList.remove('drag-over');
+                        
+                        const data = e.dataTransfer.getData('text/html');
+                        const tempEl = document.createElement('div');
+                        tempEl.innerHTML = data;
+                        const draggedImage = tempEl.firstChild;
+                        const category = draggedImage.dataset.category;
+
+                        // Check if the image matches the dropzone
+                        if (e.currentTarget.id === `${category}-dropzone` && !placedImages.has(draggedImage.src)) {
+                            e.currentTarget.querySelector('div').appendChild(draggedImage);
+                            placedImages.add(draggedImage.src);
+                        }
+                    });
+                });
+
+                trainModelBtn.addEventListener('click', () => {
+                    if (placedImages.size >= 4) { // Require at least 4 images to simulate training
+                        trainModelBtn.textContent = 'Training...';
+                        trainModelBtn.disabled = true;
+                        
+                        setTimeout(() => {
+                            trainModelBtn.textContent = 'Model Trained!';
+                            trainModelBtn.disabled = false;
+                            testModelBtn.classList.remove('hidden');
+                            feedbackMsg.textContent = 'Model trained successfully! Now click "Test Model" to see if it works.';
+                            feedbackMsg.classList.remove('hidden');
+                            userState.progress[projectId] = 'in-progress';
+                            localStorage.setItem('userState', JSON.stringify(userState));
+                            updateUI();
+                        }, 2000); // Simulate training time
+                    } else {
+                        feedbackMsg.textContent = 'Please drag at least 4 images to train the model.';
+                        feedbackMsg.classList.remove('hidden');
+                        feedbackMsg.classList.remove('text-green-600');
+                        feedbackMsg.classList.add('text-red-600');
+                    }
+                });
+
+                testModelBtn.addEventListener('click', () => {
+                    feedbackMsg.textContent = 'You did it! You built a brain that can see! +50 XP!';
+                    feedbackMsg.classList.remove('hidden', 'text-red-600');
+                    feedbackMsg.classList.add('text-green-600');
+                    userState.xp += 50;
+                    userState.progress[projectId] = 'completed';
+                    userState.badges.push(`${projectId}-badge`);
+                    localStorage.setItem('userState', JSON.stringify(userState));
+                    updateUI();
+                    testModelBtn.disabled = true;
+                });
+            } else if (projectId === 'rps-game') {
+                const playerMoveEl = document.getElementById('player-move');
+                const aiMoveEl = document.getElementById('ai-move');
+                const gameResultEl = document.getElementById('game-result');
+                const buttons = document.querySelectorAll('#rps-game .btn');
+                const moves = ['rock', 'paper', 'scissors'];
+                const feedbackMsg = document.getElementById('feedback-message-rps');
+                let gamePlayed = false;
+
+                buttons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const playerMove = e.currentTarget.dataset.move;
+                        const aiMove = moves[Math.floor(Math.random() * moves.length)];
+                        
+                        // Update UI with a bounce animation
+                        playerMoveEl.textContent = getEmoji(playerMove);
+                        aiMoveEl.textContent = getEmoji(aiMove);
+                        playerMoveEl.classList.add('bounce-in');
+                        aiMoveEl.classList.add('bounce-in');
+                        
+                        // Remove animation class after a short delay
+                        setTimeout(() => {
+                            playerMoveEl.classList.remove('bounce-in');
+                            aiMoveEl.classList.remove('bounce-in');
+                        }, 500);
+
+                        // Determine winner
+                        let result;
+                        if (playerMove === aiMove) {
+                            result = "It's a tie!";
+                        } else if (
+                            (playerMove === 'rock' && aiMove === 'scissors') ||
+                            (playerMove === 'paper' && aiMove === 'rock') ||
+                            (playerMove === 'scissors' && aiMove === 'paper')
+                        ) {
+                            result = "You win!";
+                        } else {
+                            result = "You lose!";
+                        }
+                        
+                        gameResultEl.textContent = result;
+                        gameResultEl.className = `text-2xl font-bold mb-4 ${result === "You win!" ? 'text-green-500' : result === "You lose!" ? 'text-red-500' : 'text-yellow-500'}`;
+
+                        // Simulate project completion after first game
+                        if (!gamePlayed && userState.progress[projectId] === 'not-started') {
+                            gamePlayed = true;
+                            feedbackMsg.classList.remove('hidden');
+                            userState.xp += 50;
+                            userState.progress[projectId] = 'completed';
+                            userState.badges.push(`${projectId}-badge`);
+                            localStorage.setItem('userState', JSON.stringify(userState));
+                            updateUI();
+                        }
+                    });
+                });
+
+                function getEmoji(move) {
+                    switch (move) {
+                        case 'rock': return '✊';
+                        case 'paper': return '✋';
+                        case 'scissors': return '✌️';
+                        default: return '❔';
+                    }
+                }
+            }
+        }
+        
+        // Initial state on page load
+        if (isLoggedIn) {
+            welcomeScreen.classList.add('hidden');
+            dashboardScreen.classList.remove('hidden');
+            updateUI();
+        }
+
+        // Event Listeners for UI Navigation
+        startBtn.addEventListener('click', () => {
+            welcomeScreen.classList.add('hidden');
+            dashboardScreen.classList.remove('hidden');
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userState', JSON.stringify(userState));
+            updateUI();
+        });
+        
+        backToDashboardBtn.addEventListener('click', () => {
+            projectScreen.classList.add('hidden');
+            dashboardScreen.classList.remove('hidden');
+        });
+        
+    </script>
+</body>
+</html>
