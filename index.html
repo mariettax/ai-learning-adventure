@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.58/build/Tone.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -157,7 +158,13 @@
 
         <!-- Main Dashboard Screen (hidden by default) -->
         <div id="dashboard-screen" class="hidden w-full">
-            <header class="flex flex-col md:flex-row justify-between items-center mb-8 p-4 md:p-6 card">
+            <header class="flex flex-col md:flex-row justify-between items-center mb-8 p-4 md:p-6 card relative">
+                <div class="absolute top-4 right-4">
+                    <button id="music-toggle-btn" class="text-2xl text-gray-600 hover:text-purple-600 focus:outline-none">
+                        <!-- Speaker icon from Emojis -->
+                        🔊
+                    </button>
+                </div>
                 <div class="flex items-center mb-4 md:mb-0">
                     <img id="player-avatar" src="https://placehold.co/80x80/3182CE/ffffff?text=You" alt="Your Avatar" class="rounded-full mr-4">
                     <div>
@@ -209,7 +216,7 @@
 
         <!-- Project Workspace Screen (hidden by default) -->
         <div id="project-workspace-screen" class="hidden w-full">
-            <button id="back-to-dashboard-btn" class="btn mb-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg shadow-lg hidden">
+            <button id="back-to-dashboard-btn" class="btn click-sound-btn mb-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg shadow-lg hidden">
                 &larr; Back to Dashboard
             </button>
             <div id="project-content" class="p-6 card">
@@ -231,6 +238,81 @@
         const projectContentContainer = document.getElementById('project-content');
         const confettiContainer = document.getElementById('confetti-container');
         
+        // --- Sound and Music Logic ---
+        const musicToggleBtn = document.getElementById('music-toggle-btn');
+        let isMusicPlaying = false;
+
+        // Music Synth
+        const synth = new Tone.Synth({
+            oscillator: { type: "sine" },
+            envelope: {
+                attack: 0.05,
+                decay: 0.5,
+                sustain: 0.2,
+                release: 1,
+            }
+        }).toDestination();
+
+        // Celebratory Sound Effect Synth
+        const fxSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" },
+            envelope: {
+                attack: 0.05,
+                decay: 0.2,
+                sustain: 0.1,
+                release: 0.5,
+            }
+        }).toDestination();
+        
+        // Pop sound effect for all general button clicks
+        const popSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.05,
+            octaves: 8,
+            envelope: {
+                attack: 0.001,
+                decay: 0.4,
+                sustain: 0.01,
+                release: 0.4
+            }
+        }).toDestination();
+        
+        // Function to play a light pop sound
+        function playPopSound() {
+            popSynth.triggerAttackRelease("C3", "8n");
+        }
+
+        // Music Notes
+        const melody = ["C4", "E4", "G4", "C5"];
+
+        // Create a loop to play the melody
+        const musicLoop = new Tone.Loop(time => {
+            const note = melody[Math.floor(Math.random() * melody.length)];
+            synth.triggerAttackRelease(note, "8n", time);
+        }, "4n").start(0);
+
+        // Function to play a celebratory sound effect
+        function playCelebrationSound() {
+            const now = Tone.now();
+            fxSynth.triggerAttackRelease(["E5", "G5", "C6"], "8n", now);
+        }
+
+        // Event listener for the music toggle button
+        musicToggleBtn.addEventListener('click', async () => {
+            // First time interaction, start the audio context
+            await Tone.start();
+            
+            if (isMusicPlaying) {
+                Tone.Transport.stop();
+                isMusicPlaying = false;
+                musicToggleBtn.textContent = '🔇';
+            } else {
+                Tone.Transport.start();
+                isMusicPlaying = true;
+                musicToggleBtn.textContent = '🔊';
+            }
+        });
+
+        // --- Core UI Logic and State Management (MOCK) ---
         let userState = {
             xp: 0,
             level: 1,
@@ -265,6 +347,7 @@
                                     <li>"What is your name?"</li>
                                     <li>"What is your favorite color?"</li>
                                     <li>"How old are you?"</li>
+                                    <li>"Do you know me?"</li>
                                 </ul>
                             </div>
                             <div id="bit-says-panel" class="p-4 mt-4 bg-yellow-100 rounded-lg text-yellow-800">
@@ -283,13 +366,13 @@
                                     </p>
                                 </div>
                                 <input type="text" id="chat-input" placeholder="Type your question here..." class="w-full p-2 rounded-lg bg-white border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <button id="send-btn" class="btn mt-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg w-full">
+                                <button id="send-btn" class="btn click-sound-btn mt-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg w-full">
                                     Send
                                 </button>
                                 <div id="project1-completion" class="mt-4 text-center hidden">
                                     <h4 class="text-lg font-bold text-green-600 mb-2">Mission Complete!</h4>
                                     <p class="text-gray-700">You've learned about **Rule-Based AI**, where a program follows specific instructions to seem intelligent. In the next project, we'll teach an AI to learn from **data**!</p>
-                                    <button id="complete-mission-btn" class="btn mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
+                                    <button id="complete-mission-btn" class="btn click-sound-btn mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
                                         Claim XP
                                     </button>
                                     <p id="back-to-dashboard-text" class="text-md font-semibold text-gray-700 mt-4 hidden">
@@ -356,10 +439,10 @@
                                     <img src="https://images.unsplash.com/photo-1551690940-28e4e97678f2?q=80&w=2669&auto=format&fit-crop" onerror="this.onerror=null;this.src='https://placehold.co/80x80/bfdbfe/1d4ed8?text=flower'" draggable="true" class="rounded-lg shadow-md cursor-grab active:cursor-grabbing h-20 w-20 object-cover" data-category="plant">
                                 </div>
                                 <div id="controls" class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                                    <button id="train-model-btn" class="btn px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-lg">
+                                    <button id="train-model-btn" class="btn click-sound-btn px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-lg">
                                         Train Model
                                     </button>
-                                    <button id="test-model-btn" class="btn px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg shadow-lg hidden">
+                                    <button id="test-model-btn" class="btn click-sound-btn px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg shadow-lg hidden">
                                         Test Model
                                     </button>
                                 </div>
@@ -367,7 +450,7 @@
                                     Model trained successfully! +50 XP!
                                 </div>
                                 <div id="project2-completion" class="mt-4 text-center hidden">
-                                     <button id="complete-mission-btn-2" class="btn mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
+                                     <button id="complete-mission-btn-2" class="btn click-sound-btn mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
                                         Claim XP
                                     </button>
                                     <p id="back-to-dashboard-text-2" class="text-md font-semibold text-gray-700 mt-4 hidden">
@@ -420,15 +503,15 @@
                                 </div>
                                 <div id="game-result" class="text-2xl font-bold mb-4 text-yellow-600"></div>
                                 <div class="flex justify-center gap-4">
-                                    <button id="rock-btn" data-move="rock" class="btn px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg">✊ Rock</button>
-                                    <button id="paper-btn" data-move="paper" class="btn px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg">✋ Paper</button>
-                                    <button id="scissors-btn" data-move="scissors" class="btn px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">✌️ Scissors</button>
+                                    <button id="rock-btn" data-move="rock" class="btn click-sound-btn px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg">✊ Rock</button>
+                                    <button id="paper-btn" data-move="paper" class="btn click-sound-btn px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg">✋ Paper</button>
+                                    <button id="scissors-btn" data-move="scissors" class="btn click-sound-btn px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">✌️ Scissors</button>
                                 </div>
                                 <div id="feedback-message-rps" class="mt-4 text-center text-green-600 font-bold hidden">
                                     Great job! You've built a powerful, learning AI opponent!
                                 </div>
                                 <div id="project3-completion" class="mt-4 text-center hidden">
-                                     <button id="complete-mission-btn-3" class="btn mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
+                                     <button id="complete-mission-btn-3" class="btn click-sound-btn mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
                                         Claim XP
                                     </button>
                                     <p id="back-to-dashboard-text-3" class="text-md font-semibold text-gray-700 mt-4 hidden">
@@ -524,13 +607,22 @@
                         <h4 class="font-bold text-lg">${project.title}</h4>
                         <p class="text-sm text-gray-600">Status: ${statusText}</p>
                     </div>
-                    <button class="btn px-6 py-2 ${buttonColor} text-white font-bold rounded-lg shadow-lg mt-4 sm:mt-0" data-project-id="${key}">
+                    <button class="btn click-sound-btn px-6 py-2 ${buttonColor} text-white font-bold rounded-lg shadow-lg mt-4 sm:mt-0" data-project-id="${key}">
                         ${userState.progress[key] === 'completed' ? 'Revisit Project' : project.buttonText}
                     </button>
                 `;
                 projectListContainer.appendChild(projectDiv);
             }
             addProjectButtonListeners();
+            // Re-attach listeners for dynamically created buttons
+            setupPopSoundListeners();
+        }
+        
+        // Function to set up the pop sound listener on all buttons with the class
+        function setupPopSoundListeners() {
+            document.querySelectorAll('.click-sound-btn').forEach(button => {
+                button.addEventListener('click', playPopSound);
+            });
         }
 
         function addProjectButtonListeners() {
@@ -553,6 +645,12 @@
             dashboardScreen.classList.add('hidden');
             projectScreen.classList.remove('hidden');
             backToDashboardBtn.classList.add('hidden');
+            
+            // Wait for the UI to render before attaching listeners
+            setTimeout(() => {
+                setupPopSoundListeners();
+            }, 0);
+
 
             // Add event listeners for the specific project
             if (projectId === 'chat-bot') {
@@ -563,7 +661,8 @@
                 const bitSaysPanel = document.getElementById('bit-says-panel');
                 const newRuleLessonPanel = document.getElementById('new-rule-lesson');
                 const backToDashboardText = document.getElementById('back-to-dashboard-text');
-
+                const claimBtn = document.getElementById('complete-mission-btn');
+                
                 // We have three pre-defined rules, and one to be taught
                 const rules = {
                     'what is your name': 'My name is Bit!',
@@ -572,6 +671,7 @@
                     'do you know me': null // This is the rule we need to teach
                 };
 
+                // Track the state of the mission
                 let correctAnswersGiven = 0;
                 let teachMode = false;
                 let teachQuestion = '';
@@ -592,13 +692,18 @@
                     chatbox.innerHTML += `<p class="text-gray-800 mt-2"><b>You:</b> ${rawInput}</p>`;
                     
                     if (teachMode) {
-                        if (cleanedInput.includes('yes')) {
+                        if (cleanedInput === 'yes') {
                              rules[teachQuestion] = 'I know you very well! You are my friend!';
                              teachMode = false;
                              newRuleLessonPanel.classList.add('hidden');
                              bitSaysPanel.classList.remove('hidden');
                              bitSaysPanel.querySelector('p').textContent = `Awesome! You've taught me a new rule. Try asking me "Do you know me?" again!`;
-                             correctAnswersGiven++;
+                             chatbox.innerHTML += `<p class="text-gray-600 mt-2"><b>Bit:</b> Awesome! You've taught me a new rule. Try asking me "Do you know me?" again!</p>`;
+                             // This is the fourth correct answer to complete the mission
+                             if (userState.progress[projectId] !== 'completed') {
+                                correctAnswersGiven++;
+                                checkCompletion();
+                             }
                         } else {
                             chatbox.innerHTML += `<p class="text-gray-600 mt-2"><b>Bit:</b> That's not how you teach me. Try typing "yes!"</p>`;
                         }
@@ -613,7 +718,10 @@
                         } else {
                             // Normal rule-based response
                             chatbox.innerHTML += `<p class="text-gray-600 mt-2"><b>Bit:</b> ${rules[cleanedInput]}</p>`;
-                            correctAnswersGiven++;
+                            if (userState.progress[projectId] !== 'completed') {
+                                correctAnswersGiven++;
+                                checkCompletion();
+                            }
                         }
                     } else {
                         // The bot doesn't know the question at all.
@@ -622,18 +730,20 @@
                     
                     chatbox.scrollTop = chatbox.scrollHeight;
                     chatInput.value = '';
+                }
 
-                    // Check for mission progress
-                    if (correctAnswersGiven >= 3 && userState.progress[projectId] === 'not-started') {
+                function checkCompletion() {
+                    if (correctAnswersGiven >= 4 && userState.progress[projectId] === 'not-started') {
                         completionSection.classList.remove('hidden');
-                        document.getElementById('complete-mission-btn').addEventListener('click', () => {
+                        claimBtn.addEventListener('click', () => {
                              // Award XP and update state
                             userState.xp += 50;
                             userState.progress[projectId] = 'completed';
                             userState.badges.push(`${projectId}-badge`);
                             localStorage.setItem('userState', JSON.stringify(userState));
                             updateUI();
-                            showConfetti();
+                            playCelebrationSound(); // Play sound on completion
+                            showConfetti(); // Show confetti on completion
                             setTimeout(() => {
                                 backToDashboardBtn.classList.remove('hidden');
                                 backToDashboardText.classList.remove('hidden');
@@ -699,6 +809,8 @@
                             testModelBtn.classList.remove('hidden');
                             feedbackMsg.textContent = 'Model trained successfully! Now click "Test Model" to see if it works.';
                             feedbackMsg.classList.remove('hidden');
+                            feedbackMsg.classList.remove('text-red-600');
+                            feedbackMsg.classList.add('text-green-600');
                             userState.progress[projectId] = 'in-progress';
                             localStorage.setItem('userState', JSON.stringify(userState));
                             updateUI();
@@ -723,7 +835,8 @@
                         userState.badges.push(`${projectId}-badge`);
                         localStorage.setItem('userState', JSON.stringify(userState));
                         updateUI();
-                        showConfetti();
+                        playCelebrationSound(); // Play sound on completion
+                        showConfetti(); // Show confetti on completion
                         setTimeout(() => {
                            backToDashboardBtn.classList.remove('hidden');
                            backToDashboardText.classList.remove('hidden');
@@ -787,7 +900,8 @@
                                 userState.badges.push(`${projectId}-badge`);
                                 localStorage.setItem('userState', JSON.stringify(userState));
                                 updateUI();
-                                showConfetti();
+                                playCelebrationSound(); // Play sound on completion
+                                showConfetti(); // Show confetti on completion
                                 setTimeout(() => {
                                     backToDashboardBtn.classList.remove('hidden');
                                     backToDashboardText.classList.remove('hidden');
@@ -816,7 +930,14 @@
         }
 
         // Event Listeners for UI Navigation
-        startBtn.addEventListener('click', () => {
+        startBtn.addEventListener('click', async () => {
+            // Start the Tone.js context and music on first user interaction
+            await Tone.start();
+            if (!isMusicPlaying) {
+                Tone.Transport.start();
+                isMusicPlaying = true;
+                musicToggleBtn.textContent = '🔊';
+            }
             welcomeScreen.classList.add('hidden');
             dashboardScreen.classList.remove('hidden');
             localStorage.setItem('isLoggedIn', 'true');
